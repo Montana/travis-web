@@ -1,0 +1,22 @@
+{{~#if this.isMeta~}}
+  {{~#if this.isFold~}}
+    {{~#if this.meta.isStart~}}
+      <div class="fold-start fold active">
+        <span class="fold-name">{{this.meta.detail}}</span>
+      </div>
+    {{~else if this.meta.isEnd~}}
+      <div class="fold-end"></div>
+    {{~/if~}}
+  {{~else if this.isTime~}}
+    <div>time</div>
+  {{~/if~}}
+{{~else~}}
+  <div class="log-line">
+    <a>{{this.number}}</a>
+    {{~#each this.xardions as |xard|~}}
+      <span class={{xard.class}}>{{xard.text}}</span>
+    {{~else~}}
+      Nothing?
+    {{~/each~}}
+  </div>
+{{~/if~}}

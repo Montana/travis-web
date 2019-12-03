@@ -5,7 +5,7 @@
 {{else if this.log.fetchTask.isRunning}}
   <LoadingIndicator />
 {{else}}
-  <LogContent
+  <NewLogContent
     data-test-job-log-content="true"
     @log={{this.log}}
     @job={{this.job}}

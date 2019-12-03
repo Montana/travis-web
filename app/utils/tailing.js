@@ -7,9 +7,9 @@ export default (function () {
     this.window = window;
     this.document = document;
     this.position = this._scrollPosTop();
-    this.document.addEventListener('scroll', () => {
-      throttle(this, this.onScroll, [], 200, false);
-    });
+    // this.document.addEventListener('scroll', () => {
+    //   throttle(this, this.onScroll, [], 200, false);
+    // });
     return this;
   }
 

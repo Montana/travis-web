@@ -116,7 +116,7 @@
             </span>
           </a>
         {{/if}}
-        <pre id="log" class="ansi log-body-content"></pre>
+        <pre id="log" class="ansi log-body-content">{{#each this.log.parts as |part|}}<LogParts @part={{part}} />{{/each}}</pre>
         {{#if this.showToTop}}
           <a class="to-top pointer" onclick={{action "toTop"}}>
             Top

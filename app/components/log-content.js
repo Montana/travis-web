@@ -1,5 +1,4 @@
-/* global Travis */
-import { scheduleOnce, run, schedule } from '@ember/runloop';
+import { scheduleOnce, run, schedule, throttle } from '@ember/runloop';
 
 import Component from '@ember/component';
 import LinesSelector from 'travis/utils/lines-selector';
@@ -11,9 +10,10 @@ import config from 'travis/config/environment';
 
 import { inject as service } from '@ember/service';
 import { computed } from '@ember/object';
-import { alias, and } from '@ember/object/computed';
+import { alias, and, reads } from '@ember/object/computed';
 
 const SELECTORS = {
+  BOTTOM: '.log-body-bottom',
   CONTENT: '.log-body-content',
   FIRST_HIGHLIGHT: '.log-line:visible.highlight:first'
 };
@@ -70,6 +70,10 @@ Object.defineProperty(Log.Limit.prototype, 'limited', {
   }
 });
 
+function getThrottler(context) {
+  return () => throttle(context, context.detectScrollUp, 200);
+}
+
 export default Component.extend({
   auth: service(),
   permissions: service(),
@@ -91,6 +95,11 @@ export default Component.extend({
     }
     this._super(...arguments);
     scheduleOnce('afterRender', this, 'createEngine');
+    schedule('afterRender', this, 'doTailing');
+
+    const throttler = getThrottler(this);
+    this.set('throttler', throttler);
+    document.addEventListener('scroll', throttler);
   },
 
   willDestroyElement() {
@@ -99,6 +108,9 @@ export default Component.extend({
       console.log('log view: will destroy');
     }
     scheduleOnce('afterRender', this, 'teardownLog');
+    try {
+      document.removeEventListener(this.throttler);
+    } catch (e) {}
   },
 
   teardownLog(log) {
@@ -229,18 +241,50 @@ export default Component.extend({
 
   showToTop: and('log.hasContent', 'job.canRemoveLog'),
 
-  showTailing: alias('showToTop'),
+  showTailing: reads('showToTop'),
+
+  position: 0,
+  isTailing: false,
+  doTailing() {
+    if (this.isTailing) {
+      const logBottom = this.element.querySelector(SELECTORS.BOTTOM);
+      const { innerHeight = 0 } = window;
+      const scrollPad = innerHeight - 40;
+      this.scroller.scrollToElement(logBottom, {
+        duration: 100,
+        padding: {
+          x: 0,
+          y: scrollPad,
+        },
+      });
+    }
+  },
+  detectScrollUp() {
+    const { pageYOffset = 0 } = window;
+    const { isTailing, position } = this;
+    const newTailing = pageYOffset < position ? false : isTailing;
+
+    this.setProperties({
+      isTailing: newTailing,
+      position: pageYOffset,
+    });
+  },
 
   actions: {
     toTop() {
-      Travis.tailing.stop();
+      // Travis.tailing.stop();
+      this.engine.autoCloseFold = true;
+      this.set('isTailing', false);
       return this.scroller.scrollToElement(this.element, { duration: 100 });
     },
 
     toggleTailing() {
-      Travis.tailing.toggle();
-      this.engine.autoCloseFold = !Travis.tailing.isActive();
-      return false;
+      const isActive = !this.isTailing;
+      this.set('isTailing', isActive);
+      this.engine.autoCloseFold = !isActive;
+      if (isActive) {
+        this.doTailing();
+      }
     },
 
     toggleLog() {
