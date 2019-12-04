@@ -104,7 +104,7 @@
       </div>
       <div class="log-body">
         {{#if this.showTailing}}
-          <a id="tail" class="log-tail pointer" onclick={{action "toggleTailing"}}>
+          <a id="tail" class="log-tail pointer {{if this.isTailing 'active'}}" {{on 'click' (action 'toggleTailing')}}>
             <span class="tail-status"></span>
             <span class="tail-label">
               <SvgImage @name="icon-arrowdown" @class="icon-arrow" />
@@ -122,6 +122,7 @@
             Top
           </a>
         {{/if}}
+        <div class="log-body-bottom"></div>
       </div>
     </div>
     {{#if this.limited}}

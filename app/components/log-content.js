@@ -1,5 +1,4 @@
-/* global Travis */
-import { scheduleOnce, run, schedule } from '@ember/runloop';
+import { scheduleOnce, run, schedule, throttle } from '@ember/runloop';
 
 import Component from '@ember/component';
 import LinesSelector from 'travis/utils/lines-selector';
@@ -12,8 +11,13 @@ import config from 'travis/config/environment';
 import { inject as service } from '@ember/service';
 import { computed } from '@ember/object';
 import { alias, and } from '@ember/object/computed';
+import {
+  bindKeyboardShortcuts,
+  unbindKeyboardShortcuts
+} from 'ember-keyboard-shortcuts';
 
 const SELECTORS = {
+  BOTTOM: '.log-body-bottom',
   CONTENT: '.log-body-content',
   FIRST_HIGHLIGHT: '.log-line:visible.highlight:first'
 };
@@ -116,6 +120,10 @@ export default Component.extend({
       }
       this.clearLogElement();
     }
+    unbindKeyboardShortcuts(this);
+    try {
+      window.removeEventListener('scroll', this.scrollHandler, false);
+    } catch (e) {}
   },
 
   clearLogElement() {
@@ -163,6 +171,10 @@ export default Component.extend({
         this.element.querySelector(SELECTORS.CONTENT), this.scroll, this.logFolder, null, onLogLineClick
       );
       this.observeParts(log);
+      this.scrollHandler = this.onScroll.bind(this);
+      window.addEventListener('scroll', this.scrollHandler, false);
+      this.logBottom = this.element.querySelector(SELECTORS.BOTTOM);
+      bindKeyboardShortcuts(this);
     }
   },
 
@@ -204,6 +216,7 @@ export default Component.extend({
         }
         results.push(this.engine.set(part.number, part.content));
       }
+      this.doTailing();
       return results;
     });
   },
@@ -231,16 +244,70 @@ export default Component.extend({
 
   showTailing: alias('showToTop'),
 
+  position: 0,
+  onScroll() {
+    throttle(this, this.stopTailingIfScrollUp, 200);
+  },
+  stopTailingIfScrollUp() {
+    const { pageYOffset = 0 } = window;
+    const { position } = this;
+    if (pageYOffset < position) {
+      console.log('SCROLLUP');
+      this.setProperties({
+        isTailing: false,
+        position: pageYOffset,
+      });
+    } else {
+      this.set('position', pageYOffset);
+    }
+  },
+  isTailing: false,
+  async doTailing() {
+    if (this.isTailing) {
+      const { innerHeight = 0 } = window;
+      await this.scroller.scrollToElement(this.logBottom, {
+        duration: 100,
+        padding: {
+          x: 0,
+          y: innerHeight - 60,
+        },
+      });
+    }
+  },
+
+  keyboardShortcuts: {
+    'up': {
+      action: 'disableTailing',
+      preventDefault: false
+    },
+    'down': {
+      action: 'disableTailing',
+      preventDefault: false
+    }
+  },
+
+  async setTailing(value) {
+    this.engine.autoCloseFold = !value;
+    this.set('isTailing', value);
+    if (value) {
+      await this.doTailing();
+      if (this.isTailing !== value) {
+        this.set('isTailing', value);
+      }
+    }
+  },
+
   actions: {
     toTop() {
-      Travis.tailing.stop();
       return this.scroller.scrollToElement(this.element, { duration: 100 });
     },
 
+    disableTailing() {
+      this.setTailing(false);
+    },
+
     toggleTailing() {
-      Travis.tailing.toggle();
-      this.engine.autoCloseFold = !Travis.tailing.isActive();
-      return false;
+      this.setTailing(!this.isTailing);
     },
 
     toggleLog() {

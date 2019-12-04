@@ -1,13 +1,8 @@
-/* global Travis */
 import URL from 'url';
 import TravisRoute from 'travis/routes/basic';
 import config from 'travis/config/environment';
 import BuildFaviconMixin from 'travis/mixins/build-favicon';
 import { inject as service } from '@ember/service';
-import {
-  bindKeyboardShortcuts,
-  unbindKeyboardShortcuts
-} from 'ember-keyboard-shortcuts';
 
 export default TravisRoute.extend(BuildFaviconMixin, {
   auth: service(),
@@ -50,11 +45,6 @@ export default TravisRoute.extend(BuildFaviconMixin, {
 
   activate() {
     this.setupRepoSubscriptions();
-    bindKeyboardShortcuts(this);
-  },
-
-  deactivate() {
-    unbindKeyboardShortcuts(this);
   },
 
   // We send pusher updates through user channels now and this means that if a
@@ -108,17 +98,6 @@ export default TravisRoute.extend(BuildFaviconMixin, {
     }
   },
 
-  keyboardShortcuts: {
-    'up': {
-      action: 'disableTailing',
-      preventDefault: false
-    },
-    'down': {
-      action: 'disableTailing',
-      preventDefault: false
-    }
-  },
-
   actions: {
     signIn(runAfterSignIn = true) {
       this.auth.signIn();
@@ -129,10 +108,6 @@ export default TravisRoute.extend(BuildFaviconMixin, {
 
     signOut() {
       this.auth.signOut();
-    },
-
-    disableTailing() {
-      Travis.tailing.stop();
     },
 
     redirectToGettingStarted() {
