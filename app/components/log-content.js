@@ -252,7 +252,6 @@ export default Component.extend({
     const { pageYOffset = 0 } = window;
     const { position } = this;
     if (pageYOffset < position) {
-      console.log('SCROLLUP');
       this.setProperties({
         isTailing: false,
         position: pageYOffset,
