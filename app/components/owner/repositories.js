@@ -1,7 +1,9 @@
 import Component from '@ember/component';
 import { computed } from '@ember/object';
 import {
+  match,
   reads,
+  empty,
   notEmpty,
   or,
   not,
@@ -25,6 +27,11 @@ export default Component.extend({
 
   login: reads('owner.login'),
 
+  appsInstallationEnabled: or('isNotGithubRepository', 'hasGitHubAppsInstallation'),
+  isGithubRepository: or('ownerVcsTypeIsEmpty', 'isMatchGithub'),
+  isMatchGithub: match('owner.vcs_type', /Github\S+$/),
+  ownerVcsTypeIsEmpty: empty('owner.vcs_type'),
+  isNotGithubRepository: not('isGithubRepository'),
   hasGitHubAppsInstallation: notEmpty('owner.installation'),
 
   isEnterprise: reads('features.enterpriseVersion'),

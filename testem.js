@@ -4,12 +4,19 @@ module.exports = {
   launch_in_ci: [
     'Chrome'
   ],
+  customLaunchers: {
+    ChromeHeadlessNoSandbox: {
+      base: 'ChromeHeadless',
+      flags: ['--no-sandbox']
+    }
+  },
   launch_in_dev: [
   ],
   browser_args: {
     Chrome: [
       // --no-sandbox is needed when running Chrome inside a container
       process.env.CI ? '--no-sandbox' : null,
+      '--no-sandbox',
       '--headless',
       '--disable-dev-shm-usage',
       '--disable-software-rasterizer',
