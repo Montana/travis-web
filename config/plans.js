@@ -1,109 +1,70 @@
-const description = {
-  bootstrap: 'Ideal for hobby projects',
-  startup: 'Best for small teams',
-  smallBusiness: 'Great for growing teams',
-  premium: 'Perfect for larger teams',
-};
-
-const period = {
-  monthly: 'monthly',
-  annual: 'annual'
-};
-
-const currency = 'USD';
+const currency = '$';
 
 const plans = [
   {
-    builds: 1,
+    id: 'free_plan',
+    private_credits: '10000',
+    public_credits: 0,
+    users: 0,
+    price: 0,
+    name: 'Free',
+    currency,
+    is_enabled: false,
+    is_default: false,
+    is_annual: false,
+  },
+  {
+    id: 'one_concurrent',
+    private_credits: 0,
+    public_credits: 0,
+    users: 0,
     price: 6900,
-    name: 'Bootstrap',
-    period: period.monthly,
+    price_annual: 75900,
+    name: '1 concurrent job',
     currency,
-    description: description.bootstrap,
-    isEnabled: true,
-    isDefault: false,
+    is_enabled: true,
+    is_default: true,
+    is_annual: false,
   },
   {
-    builds: 2,
+    id: 'two_concurrent',
+    private_credits: 0,
+    public_credits: 0,
+    users: 0,
     price: 12900,
-    name: 'Startup',
-    period: period.monthly,
+    price_annual: 141900,
+    name: '2 concurrent jobs',
     currency,
-    description: description.startup,
-    isEnabled: true,
-    isDefault: true,
+    is_enabled: true,
+    is_default: false,
+    is_annual: false,
   },
   {
-    builds: 5,
+    id: 'five_concurrent',
+    private_credits: 0,
+    public_credits: 0,
+    users: 0,
     price: 24900,
-    name: 'Small Business',
-    period: period.monthly,
+    price_annual: 273900,
+    name: '5 concurrent jobs',
     currency,
-    description: description.smallBusiness,
-    isEnabled: true,
-    isDefault: false,
+    is_enabled: true,
+    is_default: false,
+    is_annual: false,
   },
+
   {
-    builds: 10,
-    price: 48900,
-    name: 'Premium',
-    period: period.monthly,
+    id: 'five_concurrent_annual',
+    private_credits: 0,
+    public_credits: 0,
+    users: 0,
+    price: 0,
+    name: 'Custom',
     currency,
-    description: description.premium,
-    isEnabled: true,
-    isDefault: false,
-  },
-  {
-    builds: 1,
-    price: 75900,
-    name: 'Bootstrap',
-    period: period.annual,
-    currency,
-    description: description.bootstrap,
-    isEnabled: true,
-    isDefault: false,
-  },
-  {
-    builds: 2,
-    price: 141900,
-    name: 'Startup',
-    period: period.annual,
-    currency,
-    description: description.startup,
-    isEnabled: true,
-    isDefault: true,
-  },
-  {
-    builds: 5,
-    price: 273900,
-    name: 'Small Business',
-    period: period.annual,
-    currency,
-    description: description.smallBusiness,
-    isEnabled: true,
-    isDefault: false,
-  },
-  {
-    builds: 10,
-    price: 537900,
-    name: 'Premium',
-    period: period.annual,
-    currency,
-    description: description.premium,
-    isEnabled: true,
-    isDefault: false,
+    is_enabled: true,
+    is_default: false,
+    is_annual: true,
   },
 ];
-
-plans.forEach(plan => {
-  const { monthly, annual } = period;
-  if (plan.period === monthly) {
-    plan.monthlyPrice = plan.price;
-    plan.monthlyPriceRounded = Math.round(plan.monthlyPrice / 100);
-  } else if (plan.period === annual) {
-    plan.monthlyPrice = plan.price / 12;
-    plan.monthlyPriceRounded = Math.round(plan.monthlyPrice / 100);
-  }
-});
 
 module.exports = { plans };
